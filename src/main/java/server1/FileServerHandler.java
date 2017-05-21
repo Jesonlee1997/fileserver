@@ -27,7 +27,12 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
 
         if (start) {
             byte b = buf.readByte();
-            assert b == 100;
+            if (b != 100) {
+                byte[] bytes = new byte[buf.readableBytes()];
+                buf.readBytes(bytes);
+                System.out.println(bytes);
+            }
+
             String storePath = getStorePath(buf);
 
 
@@ -48,6 +53,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             }
         }
 
+
         //读取的字节数
         int readNum = (buf.readableBytes() > fileRemain) ? fileRemain : buf.readableBytes();
         fileRemain -= readNum;
@@ -57,6 +63,9 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
         if (fileRemain == 0) {
             outputStream.close();
             start = true;
+            if (buf.readableBytes() > 0) {
+                channelRead(ctx, buf);
+            }
         }
     }
 

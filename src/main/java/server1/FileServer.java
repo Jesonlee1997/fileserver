@@ -22,21 +22,28 @@ public class FileServer {
 
     public void startServer(int port) {
         EventLoopGroup waiter = new NioEventLoopGroup(1);
-        EventLoopGroup worker = new NioEventLoopGroup();
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(waiter, worker)
-                .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler())
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new FileServerHandler());
-                    }
-                });
+        EventLoopGroup worker = new NioEventLoopGroup(6);
+        try {
 
-        ChannelFuture future = bootstrap.bind(port);
-        future.addListener((ChannelFutureListener) future1 -> System.out.println("服务器绑定到" + port + "端口"));
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(waiter, worker)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler())
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) throws Exception {
+                            ChannelPipeline pipeline = ch.pipeline();
+                            pipeline.addLast(new FileServerHandler());
+                        }
+                    });
+
+            ChannelFuture future = bootstrap.bind(port).sync();
+            future.addListener((ChannelFutureListener) future1 -> System.out.println("服务器绑定到" + port + "端口"));
+            future.channel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            waiter.shutdownGracefully();
+            worker.shutdownGracefully();
+        }
     }
 
     public static void main(String[] args) {

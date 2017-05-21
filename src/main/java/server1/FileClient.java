@@ -9,7 +9,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -90,28 +92,32 @@ public class FileClient {
     }
 
     public void uploadDir(String localPath, String remotePath) throws IOException {
-        uploadDir(new File(localPath), remotePath);
+        Map<File, String> filePathMap = new HashMap<>();
+        uploadDir(new File(localPath), remotePath, filePathMap);
+        for (Map.Entry<File, String> entry : filePathMap.entrySet()) {
+            uploadFile(entry.getKey(), entry.getValue());
+        }
     }
 
     /**
      * @param dir        目录
      * @param remotePath 目录的远程路径
      */
-    public void uploadDir(File dir, String remotePath) throws IOException {
-
+    public void uploadDir(File dir, String remotePath, Map<File, String> filePathMap) throws IOException {
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
-                uploadDir(file, remotePath + "/" + file.getName());
+                uploadDir(file, remotePath + "/" + file.getName(), filePathMap);
             } else {
-                uploadFile(file, remotePath + "/" + file.getName());
+                //uploadFile(file, remotePath + "/" + file.getName());
+                filePathMap.put(file, remotePath + "/" + file.getName());
             }
         }
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
         FileClient client = new FileClient("127.0.0.1", 1912);
-        String localPath = "J:\\Java\\test";
-        String remotePath = "/test";
+        String localPath = "J:\\Github\\BoBo";
+        String remotePath = "/bobo";
 
         //client.uploadFile(localPath, remotePath);
         //client.deleteFile(remotePath);

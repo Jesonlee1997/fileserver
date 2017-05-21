@@ -60,7 +60,12 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
         buf.writeBytes(storePath.getBytes());
         buf.writeByte(Constants.OPT_NEW);
         buf.writeInt(fileLength);
-        channel.writeAndFlush(buf);
+        try {
+            channel.writeAndFlush(buf).sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         buf = Unpooled.buffer();
         //将消息体发送到服务端
@@ -91,5 +96,5 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
         channel = ctx.channel();
         System.out.println("成功连接到服务器");
     }
-
 }
+
