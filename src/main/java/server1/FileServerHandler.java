@@ -6,6 +6,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by JesonLee
@@ -14,59 +15,49 @@ import java.io.FileOutputStream;
 class FileServerHandler extends ChannelInboundHandlerAdapter {
 
 
-    private boolean start = true;
     private int fileRemain;
 
     //MappedByteBuffer mappedByteBuffer; TODO：大文件使用
     private FileOutputStream outputStream;
 
+    private Buffer buffer;
+    private LengthBuffer lengthBuffer;
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
         ByteBuf buf = (ByteBuf) msg;
+        //buffer中还有未处理的数据
+        int length;
 
-        if (start) {
-            byte b = buf.readByte();
-            if (b != 100) {
-                byte[] bytes = new byte[buf.readableBytes()];
-                buf.readBytes(bytes);
-                System.out.println(bytes);
-            }
+        //如果lengthBuffer中有数据的话 buffer中就一定没有
+        if (lengthBuffer != null) {
+            lengthBuffer.mergeLength(buf);
+            length = lengthBuffer.getLength();
+            handle(buf, length);
+        } else if (buffer != null) {//buffer中有上次没处理完的数据
+            buffer.add(buf);
+            handle(buffer);
+        }
 
-            String storePath = getStorePath(buf);
+        //判断buf中还是否有其他请求
+        while (buf.readableBytes() > 3) {
+            length = buf.readInt();
 
-
-            byte opt = buf.readByte();
-            if (opt == Constants.OPT_DELETE) {
-                doDelete(storePath);
-                start = true;
+            //有一个完整的请求
+            if (length < buf.readableBytes()) {
+                handle(buf, length);
+            } else {
+                //有一个不完整的请求
+                buffer = new Buffer(buf, length);
                 return;
             }
-
-            File file = new File(storePath);
-            if (opt == Constants.OPT_NEW) {
-                fileRemain = buf.readInt();
-                mkDirectory(storePath);
-                file.createNewFile();
-                outputStream = new FileOutputStream(file);
-                start = false;
-            }
         }
 
-
-        //读取的字节数
-        int readNum = (buf.readableBytes() > fileRemain) ? fileRemain : buf.readableBytes();
-        fileRemain -= readNum;
-
-        buf.readBytes(outputStream, readNum);
-
-        if (fileRemain == 0) {
-            outputStream.close();
-            start = true;
-            if (buf.readableBytes() > 0) {
-                channelRead(ctx, buf);
-            }
+        //说明int类型的长度被拆了包
+        if (buf.readableBytes() > 0) {
+            lengthBuffer = new LengthBuffer(buf);
         }
+
     }
 
     private void mkDirectory(String storePath) {
@@ -84,6 +75,50 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
         buf.readBytes(bytes);
         String storePath = FileServer.rootPath + new String(bytes);
         return storePath;
+    }
+
+    public void handle(Buffer buffer) {
+
+    }
+
+    /**
+     * 处理一个完整的请求
+     * @param buf
+     * @param length 这个请求在buf中的长度
+     * @throws IOException
+     */
+    public void handle(ByteBuf buf, int length) throws IOException {
+        byte start = buf.readByte();
+
+        if (start == Constants.REQUEST_START) {
+
+            String storePath = getStorePath(buf);
+
+            byte opt = buf.readByte();
+            if (opt == Constants.OPT_DELETE) {
+                doDelete(storePath);
+                return;
+            }
+
+            File file = new File(storePath);
+            if (opt == Constants.OPT_NEW) {
+                mkDirectory(storePath);
+                file.createNewFile();
+
+
+                outputStream = new FileOutputStream(file);
+                fileRemain = buf.readInt();//长度
+                return;
+            }
+
+        }
+        if (start == Constants.BODY_START) {
+            fileRemain -= length - 1;
+            buf.readBytes(outputStream, length - 1);
+            if (fileRemain == 0) {
+                outputStream.close();
+            }
+        }
     }
 
     /**

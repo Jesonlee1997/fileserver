@@ -5,9 +5,11 @@ package server1;
  * on 2017/5/20.
  */
 public class Constants {
-    public static final int SEGMENT_LENGTH = 1024;
+    public static final int SEGMENT_LENGTH = 1019;
 
     public static final byte REQUEST_START = 100;
-    public static final byte OPT_DELETE = 101;
-    public static final byte OPT_NEW = 102;
+    public static final byte BODY_START = 101;
+
+    public static final byte OPT_DELETE = 110;
+    public static final byte OPT_NEW = 111;
 }

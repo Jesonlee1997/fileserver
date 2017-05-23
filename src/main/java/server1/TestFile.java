@@ -10,7 +10,7 @@ import java.io.File;
  */
 public class TestFile {
 
-    private String fileName = "J:\\Java\\projects\\fileserver\\src\\main\\java\\server1\\test.txt";
+    private String fileName = "J:\\Java\\projects\\fileserver\\src\\main\\java\\client\\test.txt";
 
     @Test
     public void test1() {
