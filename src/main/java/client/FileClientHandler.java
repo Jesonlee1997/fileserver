@@ -29,8 +29,10 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
 
     public void deleteFile(String storePath) {
         ByteBuf buf = Unpooled.buffer();
-        buf.writeByte(Constants.REQUEST_START);
 
+        int length = 1 + 4 + storePath.length() + 1;
+        buf.writeInt(length);
+        buf.writeByte(Constants.REQUEST_START);
         buf.writeInt(storePath.length());
         buf.writeBytes(storePath.getBytes());
         buf.writeByte(Constants.OPT_DELETE);
@@ -48,12 +50,9 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
         }
 
 
-        clear(bytes);
-
         sendUploadRequestHead(file, storePath);
 
         sendUploadRequestBody(file);
-
 
     }
 

@@ -118,7 +118,7 @@ public class FileClient {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         FileClient client = new FileClient("127.0.0.1", 1912);
-        String localPath = "J:\\Java\\projects\\fileserver\\src\\main\\java\\server1\\test.txt";
+        String localPath = "J:\\Java\\projects\\fileserver\\src\\main\\java\\client\\test.txt";
         String remotePath = "/test.txt";
 
         client.uploadFile(localPath, remotePath);

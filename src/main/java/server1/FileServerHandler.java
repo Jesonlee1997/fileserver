@@ -20,7 +20,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
     //MappedByteBuffer mappedByteBuffer; TODO：大文件使用
     private FileOutputStream outputStream;
 
-    private Buffer buffer;
+    private RequestReaderBuffer requestReaderBuffer;
     private LengthBuffer lengthBuffer;
 
     @Override
@@ -31,12 +31,14 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
 
         //如果lengthBuffer中有数据的话 buffer中就一定没有
         if (lengthBuffer != null) {
-            lengthBuffer.mergeLength(buf);
-            length = lengthBuffer.getLength();
-            handle(buf, length);
-        } else if (buffer != null) {//buffer中有上次没处理完的数据
-            buffer.add(buf);
-            handle(buffer);
+            length = lengthBuffer.mergeLength(buf);
+            RequestReader reader = new RequestReader(buf, length);
+            handle(reader);
+            lengthBuffer = null;
+        } else if (requestReaderBuffer != null) {//buffer中有上次没处理完的数据
+            requestReaderBuffer.add(buf);
+            handle(requestReaderBuffer);
+            requestReaderBuffer = null;
         }
 
         //判断buf中还是否有其他请求
@@ -44,77 +46,56 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             length = buf.readInt();
 
             //有一个完整的请求
-            if (length < buf.readableBytes()) {
-                handle(buf, length);
+            if (length <= buf.readableBytes()) {
+                RequestReader reader = new RequestReader(buf, length);
+                handle(reader);
             } else {
                 //有一个不完整的请求
-                buffer = new Buffer(buf, length);
+                requestReaderBuffer = new RequestReaderBuffer(buf, length);
+                buf.release();
                 return;
             }
         }
 
-        //说明int类型的长度被拆了包
+        //说明代表长度的int被拆了包
         if (buf.readableBytes() > 0) {
             lengthBuffer = new LengthBuffer(buf);
+            buf.release();
         }
-
-    }
-
-    private void mkDirectory(String storePath) {
-        int index = storePath.lastIndexOf("/");
-        if (index > FileServer.rootPath.length()) {
-            String directory = storePath.substring(0, index);
-            File file = new File(directory);
-            file.mkdirs();
-        }
-    }
-
-    private String getStorePath(ByteBuf buf) {
-        int length = buf.readInt();
-        byte[] bytes = new byte[length];
-        buf.readBytes(bytes);
-        String storePath = FileServer.rootPath + new String(bytes);
-        return storePath;
-    }
-
-    public void handle(Buffer buffer) {
 
     }
 
     /**
-     * 处理一个完整的请求
-     * @param buf
-     * @param length 这个请求在buf中的长度
+     * 处理单个请求
+     * @param reader
      * @throws IOException
      */
-    public void handle(ByteBuf buf, int length) throws IOException {
-        byte start = buf.readByte();
+    private void handle(Reader reader) throws IOException {
+        byte start = reader.readByte();
 
         if (start == Constants.REQUEST_START) {
+            String storePath = getStorePath(reader);
+            byte opt = reader.readByte();
 
-            String storePath = getStorePath(buf);
-
-            byte opt = buf.readByte();
             if (opt == Constants.OPT_DELETE) {
                 doDelete(storePath);
                 return;
             }
-
             File file = new File(storePath);
+
             if (opt == Constants.OPT_NEW) {
                 mkDirectory(storePath);
                 file.createNewFile();
-
-
                 outputStream = new FileOutputStream(file);
-                fileRemain = buf.readInt();//长度
+                fileRemain = reader.readInt();//长度
                 return;
             }
 
         }
+
         if (start == Constants.BODY_START) {
-            fileRemain -= length - 1;
-            buf.readBytes(outputStream, length - 1);
+            fileRemain -= reader.length() - 1;
+            reader.readBytes(outputStream, reader.length() - 1);
             if (fileRemain == 0) {
                 outputStream.close();
             }
@@ -146,6 +127,32 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             }
         }
         return true;
+    }
+
+    /**
+     * 根据路径创建目录
+     * @param storePath
+     */
+    private void mkDirectory(String storePath) {
+        int index = storePath.lastIndexOf("/");
+        if (index > FileServer.rootPath.length()) {
+            String directory = storePath.substring(0, index);
+            File file = new File(directory);
+            file.mkdirs();
+        }
+    }
+
+    /**
+     * 获取文件将要在文件服务器上存储的路径
+     * @param reader
+     * @return
+     */
+    private String getStorePath(Reader reader) {
+        int length = reader.readInt();
+        byte[] bytes = new byte[length];
+        reader.readBytes(bytes);
+        String storePath = FileServer.rootPath + new String(bytes);
+        return storePath;
     }
 
     /**

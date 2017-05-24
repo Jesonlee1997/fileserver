@@ -10,11 +10,9 @@ import io.netty.buffer.ByteBuf;
 public class LengthBuffer {
     private byte[] bytes;
     private int width;
+    private int data;
     public int getLength() {
-        return (bytes[0] & 0xFF) << 24 //
-                | (bytes[1] & 0xFF) << 16 //
-                | (bytes[2] & 0xFF) << 8 //
-                | bytes[3] & 0xFF;
+        return data;
     }
 
 
@@ -29,7 +27,12 @@ public class LengthBuffer {
         return width != 0;
     }
 
-    public void mergeLength(ByteBuf buf) {
+    public int mergeLength(ByteBuf buf) {
         buf.readBytes(bytes, width, 4 - width);
+        data = (bytes[0] & 0xFF) << 24 //
+                | (bytes[1] & 0xFF) << 16 //
+                | (bytes[2] & 0xFF) << 8 //
+                | bytes[3] & 0xFF;
+        return data;
     }
 }

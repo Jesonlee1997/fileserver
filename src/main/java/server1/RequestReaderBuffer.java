@@ -2,18 +2,21 @@ package server1;
 
 import io.netty.buffer.ByteBuf;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * 用来存放未读取完的数据
  * Created by JesonLee
  * on 2017/5/22.
  */
-public class Buffer {
+public class RequestReaderBuffer implements Reader {
     private byte[] bytes = new byte[1024];
 
     private int totalLength;
     private int currentLength;
 
-    public Buffer(ByteBuf buf, int length) {
+    public RequestReaderBuffer(ByteBuf buf, int length) {
         totalLength = length;
 
         currentLength = buf.readableBytes();
@@ -23,9 +26,6 @@ public class Buffer {
 
     private int position;
 
-    public int position() {
-        return position;
-    }
 
     public int readInt() {
         required(4);
@@ -35,7 +35,26 @@ public class Buffer {
                 | bytes[position++] & 0xFF;
     }
 
-    public int readByte() {
+    @Override
+    public void readBytes(byte[] dst) {
+        required(dst.length);
+        System.arraycopy(bytes, position, dst, 0, dst.length);
+        position += dst.length;
+    }
+
+    @Override
+    public void readBytes(OutputStream outputStream, int length) throws IOException {
+        required(length);
+        outputStream.write(bytes, position, length);
+        position += length;
+    }
+
+    @Override
+    public int length() {
+        return currentLength;
+    }
+
+    public byte readByte() {
         required(1);
         return bytes[position++];
     }
@@ -53,7 +72,4 @@ public class Buffer {
         currentLength = totalLength;
     }
 
-    public boolean isReady() {
-        return currentLength == totalLength;
-    }
 }
