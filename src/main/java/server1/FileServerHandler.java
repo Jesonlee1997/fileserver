@@ -19,13 +19,13 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
 
     //MappedByteBuffer mappedByteBuffer; TODO：大文件使用
     private FileOutputStream outputStream;
-
     private RequestReaderBuffer requestReaderBuffer;
     private LengthBuffer lengthBuffer;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
+        System.out.println(buf.readableBytes());
         //buffer中还有未处理的数据
         int length;
 

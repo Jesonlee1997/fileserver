@@ -36,7 +36,6 @@ public class FileClient {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast(new FileClientHandler());
-                        pipeline.addLast(new FileClientOutHandler());
                         channelList.add(ch);
 
                     }
@@ -118,12 +117,12 @@ public class FileClient {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         FileClient client = new FileClient("127.0.0.1", 1912);
-        String localPath = "J:\\Java\\projects\\fileserver\\src\\main\\java\\client\\test.txt";
-        String remotePath = "/test.txt";
+        String localPath = "J:\\Downloads\\734455h50l.logs (16)";
+        String remotePath = "/logs";
 
-        client.uploadFile(localPath, remotePath);
+        //client.uploadFile(localPath, remotePath);
         //client.deleteFile(remotePath);
-        //client.uploadDir(localPath, remotePath);
+        client.uploadDir(localPath, remotePath);
     }
 }
 

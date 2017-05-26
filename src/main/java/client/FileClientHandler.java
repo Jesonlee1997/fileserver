@@ -74,7 +74,7 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
         buf.writeBytes(storePath.getBytes());
         buf.writeByte(Constants.OPT_NEW);
         buf.writeInt((int) file.length());
-        channel.write(buf);
+        channel.writeAndFlush(buf);
     }
 
     public void sendUploadRequestBody(File file) {
@@ -88,10 +88,10 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
             for (int i = 0; i < fileLength / Constants.SEGMENT_LENGTH; i++) {
                 ByteBuf buf = Unpooled.buffer(Constants.SEGMENT_LENGTH);
                 buffer.get(bytes);
-                buf.writeInt(Constants.SEGMENT_LENGTH);
+                buf.writeInt(Constants.SEGMENT_LENGTH + 1);
                 buf.writeByte(Constants.BODY_START);
                 buf.writeBytes(bytes);
-                channel.write(buf);
+                channel.writeAndFlush(buf);
             }
 
 
@@ -102,7 +102,7 @@ class FileClientHandler extends ChannelInboundHandlerAdapter {
             buf.writeByte(Constants.BODY_START);
             buffer.get(bytes, 0, remain);
             buf.writeBytes(bytes, 0, remain);
-            channel.write(buf);
+            channel.writeAndFlush(buf);
 
             fileInputStream.close();
         } catch (IOException e) {
