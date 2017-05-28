@@ -1,6 +1,7 @@
 package server1;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -24,7 +25,8 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf) msg;
+        ByteBuf byteBuf = (ByteBuf) msg;
+        ByteBuf buf = Unpooled.copiedBuffer(byteBuf);
         System.out.println(buf.readableBytes());
         //buffer中还有未处理的数据
         int length;
@@ -37,6 +39,9 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             lengthBuffer = null;
         } else if (requestReaderBuffer != null) {//buffer中有上次没处理完的数据
             requestReaderBuffer.add(buf);
+            if (!requestReaderBuffer.complete()) {
+                return;
+            }
             handle(requestReaderBuffer);
             requestReaderBuffer = null;
         }
@@ -52,7 +57,6 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             } else {
                 //有一个不完整的请求
                 requestReaderBuffer = new RequestReaderBuffer(buf, length);
-                buf.release();
                 return;
             }
         }
@@ -60,8 +64,8 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
         //说明代表长度的int被拆了包
         if (buf.readableBytes() > 0) {
             lengthBuffer = new LengthBuffer(buf);
-            buf.release();
         }
+        buf.release();
 
     }
 

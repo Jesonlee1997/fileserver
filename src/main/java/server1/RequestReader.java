@@ -6,16 +6,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * RequestReader只处理完整的请求
  * Created by JesonLee
  * on 2017/5/24.
  */
 public class RequestReader implements Reader {
     private int position;
     private byte[] bytes;
-
-    public RequestReader(int length) {
-        this.bytes = new byte[length];
-    }
 
     public byte readByte() {
         return bytes[position++];
@@ -46,5 +43,10 @@ public class RequestReader implements Reader {
     @Override
     public int length() {
         return bytes.length;
+    }
+
+    @Override
+    public boolean complete() {
+        return true;
     }
 }

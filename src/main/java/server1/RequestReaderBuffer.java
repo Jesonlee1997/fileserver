@@ -49,11 +49,6 @@ public class RequestReaderBuffer implements Reader {
         position += length;
     }
 
-    @Override
-    public int length() {
-        return currentLength;
-    }
-
     public byte readByte() {
         required(1);
         return bytes[position++];
@@ -68,8 +63,20 @@ public class RequestReaderBuffer implements Reader {
 
     //在第二段报文到达后被调用
     public void add(ByteBuf buf) {
-        buf.readBytes(bytes, currentLength, totalLength - currentLength);
-        currentLength = totalLength;
+        //可能会出现需要的字节数比buf中的更多的情况
+        int readNum = Math.min(buf.readableBytes(), totalLength - currentLength);
+        buf.readBytes(bytes, currentLength, readNum);
+        currentLength += readNum;
+    }
+
+    @Override
+    public int length() {
+        return currentLength;
+    }
+
+    @Override
+    public boolean complete() {
+        return currentLength == totalLength;
     }
 
 }

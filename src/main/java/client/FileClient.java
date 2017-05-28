@@ -117,8 +117,8 @@ public class FileClient {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         FileClient client = new FileClient("127.0.0.1", 1912);
-        String localPath = "J:\\Downloads\\734455h50l.logs (16)";
-        String remotePath = "/logs";
+        String localPath = "J:\\Github";
+        String remotePath = "/github";
 
         //client.uploadFile(localPath, remotePath);
         //client.deleteFile(remotePath);

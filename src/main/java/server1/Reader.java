@@ -19,4 +19,6 @@ public interface Reader {
 
     //表示Reader中的数据长度
     int length();
+
+    boolean complete();
 }
