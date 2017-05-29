@@ -9,12 +9,13 @@ import java.io.FileOutputStream;
  * Created by JesonLee
  * on 2017/5/28.
  */
-public class FileClientTest {
-    private FileClient client = new FileClient("127.0.0.1", 1912);
+public class JJFSClientTest {
+    private JJFSClient client = new JJFSClient("127.0.0.1", 1912);
 
     @Test
     public void deleteFile() throws Exception {
-        client.deleteFile("/*");
+        client.deleteFile("/test.dat");
+        Thread.sleep(1000);
     }
 
     @Test
@@ -44,7 +45,6 @@ public class FileClientTest {
 
         String remotePath = "/test.dat";
         client.uploadFile(localPath, remotePath);
-        Thread.sleep(3000);
     }
 
 }

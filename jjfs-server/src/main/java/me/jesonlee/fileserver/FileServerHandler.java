@@ -1,6 +1,7 @@
 package me.jesonlee.fileserver;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -21,6 +22,13 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
     private FileOutputStream outputStream;
     private RequestReaderBuffer requestReaderBuffer;
     private LengthBuffer lengthBuffer;
+    private Channel channel;
+    private String fileName;
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        channel = ctx.channel();
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -105,6 +113,10 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    void sendSuccessResponse(String fileName) {
+
+    }
+
     /**
      * @param storePath "/test/1.txt
      *                  /test/*\/
@@ -157,7 +169,8 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
         int length = reader.readInt();
         byte[] bytes = new byte[length];
         reader.readBytes(bytes);
-        String storePath = FileServer.rootPath + new String(bytes);
+        fileName = new String(bytes);
+        String storePath = FileServer.rootPath + fileName;
         return storePath;
     }
 

@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * 传输客户端
  */
-class FileClientHandler extends ChannelInboundHandlerAdapter {
+class JJFSClientHandler extends ChannelInboundHandlerAdapter {
     private Channel channel;
 
     private byte[] bytes = new byte[Constants.SEGMENT_LENGTH];

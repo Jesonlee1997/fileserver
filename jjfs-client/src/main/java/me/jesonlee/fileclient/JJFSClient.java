@@ -18,13 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by JesonLee
  * on 2017/5/7.
  */
-public class FileClient {
+public class JJFSClient {
 
     private String host;
     private int port;
     private Bootstrap bootstrap;
 
-    public FileClient(String host, int port) {
+    public JJFSClient(String host, int port) {
         this.host = host;
         this.port = port;
         EventLoopGroup group = new NioEventLoopGroup();
@@ -35,7 +35,7 @@ public class FileClient {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new FileClientHandler());
+                        pipeline.addLast(new JJFSClientHandler());
                         channelList.add(ch);
 
                     }
@@ -68,7 +68,7 @@ public class FileClient {
      */
     public void deleteFile(String remotePath) {
         Channel channel = initChannel();
-        FileClientHandler handler = channel.pipeline().get(FileClientHandler.class);
+        JJFSClientHandler handler = channel.pipeline().get(JJFSClientHandler.class);
         handler.deleteFile(remotePath);
     }
 
@@ -78,7 +78,7 @@ public class FileClient {
 
     public void uploadFile(File file, String remotePath) {
         Channel channel = initChannel();
-        FileClientHandler handler = channel.pipeline().get(FileClientHandler.class);
+        JJFSClientHandler handler = channel.pipeline().get(JJFSClientHandler.class);
         try {
             if (file.isDirectory()) {
                 uploadDir(file, remotePath);

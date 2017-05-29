@@ -13,4 +13,7 @@ class Constants {
 
     static final byte OPT_DELETE = 110;
     static final byte OPT_NEW = 111;
+
+    static final int SUCCESS = 200;
+    static final int FAIL = 500;
 }
