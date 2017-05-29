@@ -25,7 +25,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
-        System.out.println(buf.readableBytes());
+        //System.out.println(buf.readableBytes());
         //buffer中还有未处理的数据
         int length;
 
@@ -97,6 +97,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
 
         if (start == Constants.BODY_START) {
             fileRemain -= reader.length() - 1;
+            System.out.println("fileRemain" + fileRemain);
             reader.readBytes(outputStream, reader.length() - 1);
             if (fileRemain == 0) {
                 outputStream.close();

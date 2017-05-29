@@ -17,4 +17,12 @@ public class TestFile {
         System.out.println(file.getName());
         System.out.println(file.getPath());
     }
+
+    @Test
+    public void test2() {
+        String str1 = "my name is Jesonlee, i have two egg";
+        String str2 = "Jesonlee";
+        String str3 = str1.substring(str1.lastIndexOf(str2) + str2.length());
+        System.out.println(str3);
+    }
 }

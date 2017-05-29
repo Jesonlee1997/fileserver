@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package me.jesonlee.jjfstest;
+package me.jesonlee.httpserver;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -27,8 +27,6 @@ import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -103,7 +101,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
         }
 
         final String uri = request.getUri();
-        final String path = sanitizeUri(uri);
+        final String path = PathUtil.sanitizeUri(uri);
         if (path == null) {
             sendError(ctx, FORBIDDEN);
             return;
@@ -212,37 +210,11 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
         }
     }
 
-    private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
+    static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
 
-    private static String sanitizeUri(String uri) {
-        // Decode the path.
-        try {
-            uri = URLDecoder.decode(uri, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
 
-        if (uri.isEmpty() || uri.charAt(0) != '/') {
-            return null;
-        }
 
-        // Convert file separators.
-        uri = uri.replace('/', File.separatorChar);
-
-        // Simplistic dumb security check.
-        // You will have to do something serious in the production environment.
-        if (uri.contains(File.separator + '.') ||
-            uri.contains('.' + File.separator) ||
-            uri.charAt(0) == '.' || uri.charAt(uri.length() - 1) == '.' ||
-            INSECURE_URI.matcher(uri).matches()) {
-            return null;
-        }
-
-        // Convert to absolute path.
-        return HttpStaticFileServer.fileRoot + File.separator + uri;
-    }
-
-    private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
+    private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[A-Za-z0-9][-_A-Za-z0-9.]*");
 
     private static void sendListing(ChannelHandlerContext ctx, File dir) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK);
@@ -253,11 +225,10 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
             .append("<!DOCTYPE html>\r\n")
             .append("<html><head><title>")
             .append("Listing of: ")
-            .append(dirPath)
+            .append(PathUtil.getRelativePath(dirPath))
             .append("</title></head><body>\r\n")
-
             .append("<h3>Listing of: ")
-            .append(dirPath)
+            .append(PathUtil.getRelativePath(dirPath))
             .append("</h3>\r\n")
 
             .append("<ul>")
@@ -288,6 +259,8 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
         // Close the connection as soon as the error message is sent.
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
+
+
 
     private static void sendRedirect(ChannelHandlerContext ctx, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, FOUND);
