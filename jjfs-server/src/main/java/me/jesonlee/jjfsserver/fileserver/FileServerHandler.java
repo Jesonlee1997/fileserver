@@ -1,9 +1,11 @@
-package me.jesonlee.fileserver;
+package me.jesonlee.jjfsserver.fileserver;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,7 +17,6 @@ import java.io.IOException;
  */
 class FileServerHandler extends ChannelInboundHandlerAdapter {
 
-
     private int fileRemain;
 
     //MappedByteBuffer mappedByteBuffer; TODO：大文件使用
@@ -24,6 +25,8 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
     private LengthBuffer lengthBuffer;
     private Channel channel;
     private String fileName;
+    private Logger logger = LoggerFactory.getLogger(FileServerHandler.class);
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -105,17 +108,14 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
 
         if (start == Constants.BODY_START) {
             fileRemain -= reader.length() - 1;
-            System.out.println("fileRemain" + fileRemain);
             reader.readBytes(outputStream, reader.length() - 1);
             if (fileRemain == 0) {
+                logger.info("{} transfer success", fileName);
                 outputStream.close();
             }
         }
     }
 
-    void sendSuccessResponse(String fileName) {
-
-    }
 
     /**
      * @param storePath "/test/1.txt

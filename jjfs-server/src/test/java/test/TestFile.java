@@ -1,6 +1,9 @@
+package test;
+
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Created by JesonLee
@@ -24,5 +27,14 @@ public class TestFile {
         String str2 = "Jesonlee";
         String str3 = str1.substring(str1.lastIndexOf(str2) + str2.length());
         System.out.println(str3);
+    }
+
+    @Test
+    public void test3() {
+        URL url = TestFile.class.getResource("/");
+        System.out.println(url.getFile());
+        File file = new File(url.getFile());
+        String configPath = file.getParent() + "/conf/jjfs.xml";
+        System.out.println(configPath);
     }
 }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package me.jesonlee.httpserver;
+package me.jesonlee.jjfsserver.httpserver;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -25,14 +25,22 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.apache.log4j.Logger;
 
 public final class HttpStaticFileServer {
 
     static final boolean SSL = System.getProperty("ssl") != null;
     static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
     static String fileRoot = "J:\\Java\\projects\\fileserver\\store";
+    private static Logger logger = Logger.getLogger(HttpStaticFileServer.class);
 
     public static void main(String[] args) throws Exception {
+
+        int port = Integer.parseInt(args[0]);
+        if (port < 1000 || port > 65535) {
+            logger.error("port can not less than 1000 or beyond 65535");
+            System.exit(1);
+        }
         // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
@@ -53,7 +61,7 @@ public final class HttpStaticFileServer {
 
             Channel ch = b.bind(PORT).sync().channel();
 
-            System.err.println("Open your web browser and navigate to " +
+            System.out.println("Open your web browser and navigate to " +
                     (SSL? "https" : "http") + "://127.0.0.1:" + PORT + '/');
 
             ch.closeFuture().sync();

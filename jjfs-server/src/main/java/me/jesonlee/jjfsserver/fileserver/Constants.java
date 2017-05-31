@@ -1,4 +1,4 @@
-package me.jesonlee.fileserver;
+package me.jesonlee.jjfsserver.fileserver;
 
 /**
  * Created by JesonLee

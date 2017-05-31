@@ -1,4 +1,4 @@
-package me.jesonlee.fileserver;
+package me.jesonlee.jjfsserver.fileserver;
 
 import java.io.IOException;
 import java.io.OutputStream;

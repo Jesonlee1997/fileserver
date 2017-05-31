@@ -14,8 +14,7 @@ public class JJFSClientTest {
 
     @Test
     public void deleteFile() throws Exception {
-        client.deleteFile("/test.dat");
-        Thread.sleep(1000);
+        client.deleteFile("/*");
     }
 
     @Test

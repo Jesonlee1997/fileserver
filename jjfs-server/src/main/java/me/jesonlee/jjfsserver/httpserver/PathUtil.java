@@ -1,4 +1,4 @@
-package me.jesonlee.httpserver;
+package me.jesonlee.jjfsserver.httpserver;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

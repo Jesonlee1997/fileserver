@@ -24,3 +24,4 @@ api使用：
     String remotePath = "/test1.dat";
     client.uploadFile(localPath, remotePath);
     
+注意：不要在junit test中运行，可能会出现数据还没传输完线程就结束。
