@@ -4,8 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,7 +24,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
     private LengthBuffer lengthBuffer;
     private Channel channel;
     private String fileName;
-    private Logger logger = LoggerFactory.getLogger(FileServerHandler.class);
+    private Logger logger = Logger.getLogger(FileServerHandler.class);
 
 
     @Override
@@ -110,7 +109,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             fileRemain -= reader.length() - 1;
             reader.readBytes(outputStream, reader.length() - 1);
             if (fileRemain == 0) {
-                logger.info("{} transfer success", fileName);
+                logger.info(fileName + " transfer success");
                 outputStream.close();
             }
         }
@@ -133,7 +132,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
             return file.delete();
         }
 
-        if (index > FileServer.rootPath.length()) {
+        if (index > FileServer.contextRoot.length()) {
             String directory = storePath.substring(0, index - 1);
             File file = new File(directory);
             for (File child : file.listFiles()) {
@@ -153,7 +152,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
      */
     private void mkDirectory(String storePath) {
         int index = storePath.lastIndexOf("/");
-        if (index > FileServer.rootPath.length()) {
+        if (index > FileServer.contextRoot.length()) {
             String directory = storePath.substring(0, index);
             File file = new File(directory);
             file.mkdirs();
@@ -170,7 +169,7 @@ class FileServerHandler extends ChannelInboundHandlerAdapter {
         byte[] bytes = new byte[length];
         reader.readBytes(bytes);
         fileName = new String(bytes);
-        String storePath = FileServer.rootPath + fileName;
+        String storePath = FileServer.contextRoot + fileName;
         return storePath;
     }
 

@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
  * on 2017/5/28.
  */
 public class JJFSClientTest {
-    private JJFSClient client = new JJFSClient("127.0.0.1", 1912);
+    private JJFSClient client = new JJFSClient("192.168.56.200", 1912);
 
     @Test
     public void deleteFile() throws Exception {
@@ -44,6 +44,7 @@ public class JJFSClientTest {
 
         String remotePath = "/test.dat";
         client.uploadFile(localPath, remotePath);
+        Thread.sleep(3000);
     }
 
 }

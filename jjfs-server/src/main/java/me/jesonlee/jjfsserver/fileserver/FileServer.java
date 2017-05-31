@@ -18,16 +18,14 @@ import java.io.File;
 public class FileServer {
     private static Logger logger = Logger.getLogger(FileServer.class);
 
-    static String rootPath = "J:/Java/projects/fileserver/store";
-
-    public static void setRootPath(String rootPath) {
-        FileServer.rootPath = rootPath;
-    }
+    static String contextRoot;
 
     static {
-        File file = new File(rootPath);
+        contextRoot = System.getProperty("contextRoot");
+        File file = new File(contextRoot);
         file.mkdirs();
     }
+
 
     public void startServer(int port) {
         EventLoopGroup waiter = new NioEventLoopGroup(1);
@@ -48,8 +46,8 @@ public class FileServer {
                     });
 
             ChannelFuture future = bootstrap.bind(port).sync();
-            System.out.println("服务器绑定到" + port+ "端口");
-            logger.info("服务器绑定到" + port+ "端口");
+            System.out.println("文件服务器绑定到" + port+ "端口");
+            logger.info("文件服务器绑定到" + port+ "端口");
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             waiter.shutdownGracefully();
@@ -58,11 +56,12 @@ public class FileServer {
     }
 
     public static void main(String[] args) {
-        int port = Integer.parseInt(args[0]);
+        int port = Integer.parseInt(System.getProperty("filePort"));
         if (port < 1000 || port > 65535) {
             logger.error("port can not less than 1000 or beyond 65535");
             System.exit(1);
         }
+
         new FileServer().startServer(port);
     }
 }

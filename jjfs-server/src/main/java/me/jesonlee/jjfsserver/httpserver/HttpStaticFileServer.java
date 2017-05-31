@@ -30,13 +30,13 @@ import org.apache.log4j.Logger;
 public final class HttpStaticFileServer {
 
     static final boolean SSL = System.getProperty("ssl") != null;
-    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
+    static int port;
     static String fileRoot = "J:\\Java\\projects\\fileserver\\store";
     private static Logger logger = Logger.getLogger(HttpStaticFileServer.class);
 
     public static void main(String[] args) throws Exception {
 
-        int port = Integer.parseInt(args[0]);
+        port = Integer.parseInt(System.getProperty("httpPort"));
         if (port < 1000 || port > 65535) {
             logger.error("port can not less than 1000 or beyond 65535");
             System.exit(1);
@@ -59,13 +59,15 @@ public final class HttpStaticFileServer {
              .handler(new LoggingHandler(LogLevel.INFO))
              .childHandler(new HttpStaticFileServerInitializer(sslCtx));
 
-            Channel ch = b.bind(PORT).sync().channel();
+            Channel ch = b.bind(port).sync().channel();
+            System.out.println("http文件服务器运行在" + port);
+            logger.info("http文件服务器运行" + port);
 
             System.out.println("Open your web browser and navigate to " +
-                    (SSL? "https" : "http") + "://127.0.0.1:" + PORT + '/');
+                    (SSL? "https" : "http") + "://127.0.0.1:" + port + '/');
 
             ch.closeFuture().sync();
-            System.out.println("服务器运行在" + PORT);
+
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

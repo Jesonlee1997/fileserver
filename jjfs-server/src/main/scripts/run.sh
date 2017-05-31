@@ -12,10 +12,10 @@ GREP_KEY="Diname="${APP_NAME}
 APP_OPTS="-Xrs -Xms512m -Xmx1024m -Dlog4j.properties=../conf/log4j.properties"
 
 # 程序主类
-APP_CLASS="me.jesonlee.jjfsserver.fileserver.Run"
+APP_CLASS="me.jesonlee.jjfsserver.Run"
 
 # 日志文件
-APP_LOG="../logs/log.log"
+APP_LOG="../logs/start.log"
 
 # 模块运行需要的lib
 APP_LIBS=./:`ls ../lib/*.jar | paste -s -d":" -`
@@ -79,7 +79,7 @@ start(){
     fi
 }
 
-# 停止HelloWorld进程
+# 停止进程
 stop()
 {
     is_exist

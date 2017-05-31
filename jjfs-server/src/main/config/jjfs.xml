@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jjfsCofig>
+    <contentRoot>/usr/data</contentRoot>
+    <filePort>1912</filePort>
+    <httpPort>8081</httpPort>
+</jjfsCofig>

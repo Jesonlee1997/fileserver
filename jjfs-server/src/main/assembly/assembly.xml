@@ -11,7 +11,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>src/main/resources</directory>
+            <directory>src/main/config</directory>
             <outputDirectory>/conf</outputDirectory>
             <includes>
                 <include>jjfs.xml</include>
